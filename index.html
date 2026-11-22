@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<title>Maldives Driving Theory</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#172033}
+header{background:#2563eb;color:white;text-align:center;padding:25px 12px}
+header h1{font-size:25px;margin:0 0 7px}
+header p{margin:0;font-size:14px}
+.container{max-width:600px;margin:18px auto;padding:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.stat{background:white;border-radius:12px;padding:14px 5px;text-align:center;box-shadow:0 2px 6px #0001}
+.stat strong{display:block;font-size:23px;margin-top:5px}
+.card{background:white;padding:20px;border-radius:16px;margin-top:18px;box-shadow:0 3px 12px #0001}
+.progress{height:8px;background:#e5e7eb;border-radius:10px;margin:12px 0 20px;overflow:hidden}
+#bar{height:100%;width:0;background:#2563eb}
+#question{font-size:19px;line-height:1.5;margin:12px 0 20px}
+.option{width:100%;padding:14px;margin:6px 0;border:1px solid #bbb;border-radius:12px;background:white;text-align:left;font-size:15px;line-height:1.5;cursor:pointer}
+.option:disabled{cursor:default;opacity:1}
+.option.correct{background:#dbeafe;border:2px solid #2563eb;color:#1746a0}
+.option.wrong{background:#fee2e2;border:2px solid #ef4444;color:#991b1b}
+#feedback{font-weight:bold;margin-top:15px;line-height:1.5}
+.buttons{display:flex;gap:10px;margin-top:20px}
+.buttons button{flex:1;padding:13px;border:0;border-radius:10px;background:#2563eb;color:white;font-size:16px}
+.buttons button:disabled{background:#aab4c5}
+#finish{display:none;text-align:center;background:white;padding:25px;border-radius:16px;margin-top:18px}
+.restart{padding:13px 25px;background:#2563eb;color:white;border:0;border-radius:10px}
+footer{text-align:center;color:#777;font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Maldives Driving Theory</h1>
+<p>Driving Theory Test Practice</p>
+</header>
+
+<div class="container">
+<div class="stats">
+<div class="stat">Total<strong id="total">2</strong></div>
+<div class="stat">Correct<strong id="correct" style="color:#16a34a">0</strong></div>
+<div class="stat">Wrong<strong id="wrong" style="color:#ef4444">0</strong></div>
+</div>
+
+<div class="card" id="quiz">
+<div style="display:flex;justify-content:space-between">
+<strong id="number">Question 1</strong>
+<strong>Mark: 1</strong>
+</div>
+<div class="progress"><div id="bar"></div></div>
+<div id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+<div class="buttons">
+<button id="prev" onclick="move(-1)">Previous</button>
+<button id="next" onclick="move(1)">Next</button>
+</div>
+</div>
+
+<div id="finish">
+<h2>Test Completed!</h2>
+<h1 id="score"></h1>
+<p id="result"></p>
+<button class="restart" onclick="restart()">Try Again</button>
+</div>
+</div>
+
+<footer>Maldives Driving Theory Practice App</footer>
+
+<script>
+const questions = [
+{
+q:"Usage of headsets whilst driving [MANDATORY]",
+a:[
+"Not allowed",
+"Allowed if can be driven with proper attention and focus",
+"Is allowed to speak using headsets instead of stopping to speak",
+"It is up to the driver to use or not use the headset"
+],
+correct:0
+},
+{
+q:"Vehicle horn should be",
+a:[
+"The same horn fixed during the manufacturing",
+"Any type of horn can be fixed",
+"A horn is not required",
+"The horn should be according to the standard issued from the Ministry"
+],
+correct:0
+}
+];
+
+let current=0;
+let answers={};
+
+function render(){
+const q=questions[current];
+document.getElementById("number").textContent=
+"Question "+(current+1)+" of "+questions.length;
+document.getElementById("question").textContent=q.q;
+document.getElementById("total").textContent=questions.length;
+document.getElementById("bar").style.width=
+((current+1)/questions.length*100)+"%";
+
+const box=document.getElementById("options");
+box.innerHTML="";
+
+q.a.forEach((answer,i)=>{
+const btn=document.createElement("button");
+btn.className="option";
+btn.textContent=String.fromCharCode(65+i)+". "+answer;
+
+if(answers[current]!==undefined){
+btn.disabled=true;
+if(i===q.correct)btn.classList.add("correct");
+if(i===answers[current] && i!==q.correct)
+btn.classList.add("wrong");
+}
+
+btn.onclick=()=>selectAnswer(i);
+box.appendChild(btn);
+});
+
+const feedback=document.getElementById("feedback");
+if(answers[current]!==undefined){
+feedback.style.color=answers[current]===q.correct?"#2563eb":"#dc2626";
+feedback.textContent=answers[current]===q.correct?
+"Correct Answer! Well done.":
+"Wrong! Correct answer: "+q.a[q.correct];
+}else{
+feedback.textContent="";
+}
+
+document.getElementById("prev").disabled=current===0;
+document.getElementById("next").textContent=
+current===questions.length-1?"Finish":"Next";
+
+updateStats();
+}
+
+function selectAnswer(i){
+if(answers[current]!==undefined)return;
+answers[current]=i;
+render();
+}
+
+function updateStats(){
+let correct=0,wrong=0;
+Object.keys(answers).forEach(k=>{
+if(answers[k]===questions[k].correct)correct++;
+else wrong++;
+});
+document.getElementById("correct").textContent=correct;
+document.getElementById("wrong").textContent=wrong;
+}
+
+function move(direction){
+if(direction===-1){
+current--;
+render();
+return;
+}
+if(current<questions.length-1){
+current++;
+render();
+}else{
+finishTest();
+}
+}
+
+function finishTest(){
+document.getElementById("quiz").style.display="none";
+document.getElementById("finish").style.display="block";
+let correct=0;
+Object.keys(answers).forEach(k=>{
+if(answers[k]===questions[k].correct)correct++;
+});
+document.getElementById("score").textContent=
+correct+" / "+questions.length;
+document.getElementById("result").textContent=
+"Your score: "+correct+" marks";
+}
+
+function restart(){
+current=0;
+answers={};
+document.getElementById("quiz").style.display="block";
+document.getElementById("finish").style.display="none";
+render();
+}
+
+render();
+</script>
+</body>
+</html>
